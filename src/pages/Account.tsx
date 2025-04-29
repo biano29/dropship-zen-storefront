@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, UserRound } from "lucide-react";
+import EditProfileSheet from "@/components/EditProfileSheet";
 
 interface UserData {
   name: string;
@@ -12,6 +13,7 @@ interface UserData {
 
 const Account: React.FC = () => {
   const [user, setUser] = useState<UserData | null>(null);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -34,6 +36,18 @@ const Account: React.FC = () => {
     navigate("/");
   };
 
+  const handleProfileUpdate = (updatedData: UserData) => {
+    // Atualizar dados do usuário no localStorage
+    const updatedUser = { ...updatedData };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+    
+    toast({
+      title: "Perfil atualizado",
+      description: "Seus dados foram atualizados com sucesso.",
+    });
+  };
+
   if (!user) {
     return <div className="container mx-auto px-4 py-28 text-center">Carregando...</div>;
   }
@@ -52,7 +66,7 @@ const Account: React.FC = () => {
         <div className="bg-white p-8 rounded-lg shadow-md mb-8">
           <div className="flex items-center gap-4 mb-6">
             <div className="bg-shop-blue/10 p-4 rounded-full">
-              <User size={48} className="text-shop-blue" />
+              <UserRound size={48} className="text-shop-blue" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold">{user.name}</h2>
@@ -63,7 +77,12 @@ const Account: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-medium mb-4">Informações da Conta</h3>
-              <Button className="w-full mb-2">Editar perfil</Button>
+              <Button 
+                className="w-full mb-2"
+                onClick={() => setEditProfileOpen(true)}
+              >
+                Editar perfil
+              </Button>
               <Button variant="outline" className="w-full">Alterar senha</Button>
             </div>
             
@@ -78,6 +97,13 @@ const Account: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <EditProfileSheet
+        open={editProfileOpen}
+        onOpenChange={setEditProfileOpen}
+        userData={user}
+        onSave={handleProfileUpdate}
+      />
     </div>
   );
 };
