@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -52,6 +52,18 @@ const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(userData.profilePicture);
   const { toast } = useToast();
 
+  // Reset form when userData changes
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: userData.name,
+        email: userData.email,
+        profilePicture: userData.profilePicture,
+      });
+      setPreviewUrl(userData.profilePicture);
+    }
+  }, [open, userData]);
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -62,10 +74,13 @@ const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
   });
 
   const handleSubmit = (values: ProfileFormValues) => {
-    onSave({
+    // Ensure we're saving the profile picture URL
+    const updatedData = {
       ...values,
       profilePicture: previewUrl,
-    });
+    };
+    
+    onSave(updatedData);
     onOpenChange(false);
   };
 
@@ -93,12 +108,14 @@ const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
       return;
     }
 
-    // Create URL for preview
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    
-    // Update form value
-    form.setValue("profilePicture", url);
+    // Read file as data URL to store in localStorage
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setPreviewUrl(dataUrl);
+      form.setValue("profilePicture", dataUrl);
+    };
+    reader.readAsDataURL(file);
   };
 
   return (

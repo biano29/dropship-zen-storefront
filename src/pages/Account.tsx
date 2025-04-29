@@ -39,10 +39,9 @@ const Account: React.FC = () => {
   };
 
   const handleProfileUpdate = (updatedData: UserData) => {
-    // Atualizar dados do usuário no localStorage
-    const updatedUser = { ...updatedData };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setUser(updatedUser);
+    // Atualizar dados do usuário no localStorage e no estado
+    localStorage.setItem("user", JSON.stringify(updatedData));
+    setUser(updatedData);
     
     toast({
       title: "Perfil atualizado",
