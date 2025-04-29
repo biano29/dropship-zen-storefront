@@ -5,6 +5,9 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 
 const Checkout: React.FC = () => {
   const { cartItems, getOrderSummary, clearCart } = useCart();
@@ -12,6 +15,7 @@ const Checkout: React.FC = () => {
   
   const [step, setStep] = useState<'shipping' | 'payment' | 'confirmation'>('shipping');
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'credit' | 'boleto' | 'pix'>('credit');
   
   const [shippingDetails, setShippingDetails] = useState({
     fullName: "",
@@ -44,6 +48,10 @@ const Checkout: React.FC = () => {
       ...prev,
       [name]: value,
     }));
+  };
+  
+  const handlePaymentMethodChange = (value: 'credit' | 'boleto' | 'pix') => {
+    setPaymentMethod(value);
   };
   
   const handleShippingSubmit = (e: React.FormEvent) => {
@@ -307,107 +315,135 @@ const Checkout: React.FC = () => {
                 {/* Payment Method Selection */}
                 <div className="mb-6">
                   <p className="text-sm font-medium text-shop-gray mb-3">Método de Pagamento</p>
-                  <div className="flex flex-wrap gap-4">
-                    <label className="border rounded-md p-4 flex items-center gap-3 cursor-pointer bg-shop-light-blue/10 border-shop-blue">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="credit"
-                        defaultChecked
-                        className="text-shop-blue"
-                      />
-                      <span>Cartão de Crédito</span>
-                    </label>
-                    <label className="border rounded-md p-4 flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="boleto"
-                        className="text-shop-blue"
-                      />
-                      <span>Boleto Bancário</span>
-                    </label>
-                    <label className="border rounded-md p-4 flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="pix"
-                        className="text-shop-blue"
-                      />
-                      <span>PIX</span>
-                    </label>
-                  </div>
+                  <RadioGroup 
+                    value={paymentMethod} 
+                    onValueChange={(value) => handlePaymentMethodChange(value as 'credit' | 'boleto' | 'pix')}
+                    className="flex flex-wrap gap-4"
+                  >
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value="credit" id="credit" />
+                      </FormControl>
+                      <FormLabel htmlFor="credit" className="font-medium cursor-pointer">
+                        Cartão de Crédito
+                      </FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value="boleto" id="boleto" />
+                      </FormControl>
+                      <FormLabel htmlFor="boleto" className="font-medium cursor-pointer">
+                        Boleto Bancário
+                      </FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value="pix" id="pix" />
+                      </FormControl>
+                      <FormLabel htmlFor="pix" className="font-medium cursor-pointer">
+                        PIX
+                      </FormLabel>
+                    </FormItem>
+                  </RadioGroup>
                 </div>
                 
-                {/* Credit Card Details */}
-                <div className="mb-6">
-                  <p className="text-sm font-medium text-shop-gray mb-3">Detalhes do Cartão de Crédito</p>
-                  
-                  <div className="mb-4">
-                    <label htmlFor="cardName" className="block text-sm font-medium text-shop-gray mb-1">
-                      Nome no Cartão *
-                    </label>
-                    <Input
-                      type="text"
-                      id="cardName"
-                      name="cardName"
-                      value={paymentDetails.cardName}
-                      onChange={handlePaymentChange}
-                      required
-                      className="w-full"
-                      placeholder="Exatamente como aparece no cartão"
-                    />
-                  </div>
-                  
-                  <div className="mb-4">
-                    <label htmlFor="cardNumber" className="block text-sm font-medium text-shop-gray mb-1">
-                      Número do Cartão *
-                    </label>
-                    <Input
-                      type="text"
-                      id="cardNumber"
-                      name="cardNumber"
-                      value={paymentDetails.cardNumber}
-                      onChange={handlePaymentChange}
-                      required
-                      className="w-full"
-                      placeholder="1234 5678 9012 3456"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="expiry" className="block text-sm font-medium text-shop-gray mb-1">
-                        Data de Validade *
+                {/* Credit Card Details - only show if credit is selected */}
+                {paymentMethod === 'credit' && (
+                  <div className="mb-6">
+                    <p className="text-sm font-medium text-shop-gray mb-3">Detalhes do Cartão de Crédito</p>
+                    
+                    <div className="mb-4">
+                      <label htmlFor="cardName" className="block text-sm font-medium text-shop-gray mb-1">
+                        Nome no Cartão *
                       </label>
                       <Input
                         type="text"
-                        id="expiry"
-                        name="expiry"
-                        value={paymentDetails.expiry}
+                        id="cardName"
+                        name="cardName"
+                        value={paymentDetails.cardName}
                         onChange={handlePaymentChange}
                         required
                         className="w-full"
-                        placeholder="MM/AA"
+                        placeholder="Exatamente como aparece no cartão"
                       />
                     </div>
-                    <div>
-                      <label htmlFor="cvv" className="block text-sm font-medium text-shop-gray mb-1">
-                        CVV *
+                    
+                    <div className="mb-4">
+                      <label htmlFor="cardNumber" className="block text-sm font-medium text-shop-gray mb-1">
+                        Número do Cartão *
                       </label>
                       <Input
                         type="text"
-                        id="cvv"
-                        name="cvv"
-                        value={paymentDetails.cvv}
+                        id="cardNumber"
+                        name="cardNumber"
+                        value={paymentDetails.cardNumber}
                         onChange={handlePaymentChange}
                         required
                         className="w-full"
-                        placeholder="123"
+                        placeholder="1234 5678 9012 3456"
                       />
                     </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="expiry" className="block text-sm font-medium text-shop-gray mb-1">
+                          Data de Validade *
+                        </label>
+                        <Input
+                          type="text"
+                          id="expiry"
+                          name="expiry"
+                          value={paymentDetails.expiry}
+                          onChange={handlePaymentChange}
+                          required
+                          className="w-full"
+                          placeholder="MM/AA"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="cvv" className="block text-sm font-medium text-shop-gray mb-1">
+                          CVV *
+                        </label>
+                        <Input
+                          type="text"
+                          id="cvv"
+                          name="cvv"
+                          value={paymentDetails.cvv}
+                          onChange={handlePaymentChange}
+                          required
+                          className="w-full"
+                          placeholder="123"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Boleto Payment Details */}
+                {paymentMethod === 'boleto' && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-md">
+                    <p className="font-medium mb-2">Informações do Boleto Bancário</p>
+                    <p className="text-shop-gray mb-3">
+                      Um boleto será gerado após a finalização do pedido. Você terá até 3 dias úteis para efetuar o pagamento.
+                    </p>
+                    <p className="text-shop-gray">
+                      O pedido será confirmado automaticamente após a compensação do pagamento.
+                    </p>
+                  </div>
+                )}
+
+                {/* PIX Payment Details */}
+                {paymentMethod === 'pix' && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-md">
+                    <p className="font-medium mb-2">Informações do Pagamento via PIX</p>
+                    <p className="text-shop-gray mb-3">
+                      Um QR Code PIX será exibido na próxima etapa. O pagamento é processado instantaneamente.
+                    </p>
+                    <p className="text-shop-gray">
+                      O pedido será confirmado automaticamente após a confirmação do pagamento.
+                    </p>
+                  </div>
+                )}
                 
                 <div className="mt-6 flex justify-between">
                   <Button 
@@ -449,8 +485,18 @@ const Checkout: React.FC = () => {
               <div className="mb-6">
                 <h3 className="font-medium mb-2">Método de Pagamento</h3>
                 <div className="bg-gray-50 p-4 rounded-md">
-                  <p>Cartão de Crédito</p>
-                  <p>**** **** **** {paymentDetails.cardNumber.slice(-4)}</p>
+                  {paymentMethod === 'credit' && (
+                    <>
+                      <p>Cartão de Crédito</p>
+                      <p>**** **** **** {paymentDetails.cardNumber.slice(-4) || '****'}</p>
+                    </>
+                  )}
+                  {paymentMethod === 'boleto' && (
+                    <p>Boleto Bancário</p>
+                  )}
+                  {paymentMethod === 'pix' && (
+                    <p>Pagamento via PIX</p>
+                  )}
                 </div>
               </div>
               
