@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Column 1 - About */}
           <div>
-            <h3 className="font-semibold text-xl mb-4">ZenDrop</h3>
+            <h3 className="font-semibold text-xl mb-4">SantelineStore</h3>
             <p className="text-gray-300 mb-4">
               Sua loja virtual de dropshipping com produtos de qualidade e entregas rápidas para todo o Brasil.
             </p>
@@ -115,7 +115,7 @@ const Footer: React.FC = () => {
         {/* Bottom Section */}
         <div className="mt-10 pt-6 border-t border-gray-700">
           <p className="text-center text-gray-400">
-            &copy; {new Date().getFullYear()} ZenDrop. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} SantelineStore. Todos os direitos reservados.
           </p>
         </div>
       </div>
