@@ -15,7 +15,6 @@ const Checkout: React.FC = () => {
   
   const [step, setStep] = useState<'shipping' | 'payment' | 'confirmation'>('shipping');
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'credit' | 'boleto' | 'pix'>('credit');
   
   const [shippingDetails, setShippingDetails] = useState({
     fullName: "",
@@ -34,6 +33,16 @@ const Checkout: React.FC = () => {
     cvv: "",
   });
   
+  // Create form instance for payment method selection
+  const paymentMethodForm = useForm({
+    defaultValues: {
+      paymentMethod: 'credit' as 'credit' | 'boleto' | 'pix'
+    }
+  });
+  
+  // Get payment method from the form
+  const paymentMethod = paymentMethodForm.watch('paymentMethod');
+  
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setShippingDetails(prev => ({
@@ -48,10 +57,6 @@ const Checkout: React.FC = () => {
       ...prev,
       [name]: value,
     }));
-  };
-  
-  const handlePaymentMethodChange = (value: 'credit' | 'boleto' | 'pix') => {
-    setPaymentMethod(value);
   };
   
   const handleShippingSubmit = (e: React.FormEvent) => {
@@ -315,36 +320,34 @@ const Checkout: React.FC = () => {
                 {/* Payment Method Selection */}
                 <div className="mb-6">
                   <p className="text-sm font-medium text-shop-gray mb-3">Método de Pagamento</p>
-                  <RadioGroup 
-                    value={paymentMethod} 
-                    onValueChange={(value) => handlePaymentMethodChange(value as 'credit' | 'boleto' | 'pix')}
-                    className="flex flex-wrap gap-4"
-                  >
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
+                  <Form {...paymentMethodForm}>
+                    <RadioGroup 
+                      value={paymentMethod}
+                      onValueChange={(value) => {
+                        paymentMethodForm.setValue('paymentMethod', value as 'credit' | 'boleto' | 'pix');
+                      }}
+                      className="flex flex-wrap gap-4"
+                    >
+                      <div className="flex items-center space-x-3 space-y-0">
                         <RadioGroupItem value="credit" id="credit" />
-                      </FormControl>
-                      <FormLabel htmlFor="credit" className="font-medium cursor-pointer">
-                        Cartão de Crédito
-                      </FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
+                        <label htmlFor="credit" className="font-medium cursor-pointer">
+                          Cartão de Crédito
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-3 space-y-0">
                         <RadioGroupItem value="boleto" id="boleto" />
-                      </FormControl>
-                      <FormLabel htmlFor="boleto" className="font-medium cursor-pointer">
-                        Boleto Bancário
-                      </FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
+                        <label htmlFor="boleto" className="font-medium cursor-pointer">
+                          Boleto Bancário
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-3 space-y-0">
                         <RadioGroupItem value="pix" id="pix" />
-                      </FormControl>
-                      <FormLabel htmlFor="pix" className="font-medium cursor-pointer">
-                        PIX
-                      </FormLabel>
-                    </FormItem>
-                  </RadioGroup>
+                        <label htmlFor="pix" className="font-medium cursor-pointer">
+                          PIX
+                        </label>
+                      </div>
+                    </RadioGroup>
+                  </Form>
                 </div>
                 
                 {/* Credit Card Details - only show if credit is selected */}
