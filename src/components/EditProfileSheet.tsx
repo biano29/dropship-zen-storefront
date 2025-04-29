@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -20,10 +20,14 @@ import {
   FormLabel, 
   FormMessage 
 } from "@/components/ui/form";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Camera, UserRound } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Digite um email válido"),
+  profilePicture: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -34,6 +38,7 @@ interface EditProfileSheetProps {
   userData: {
     name: string;
     email: string;
+    profilePicture?: string;
   };
   onSave: (data: ProfileFormValues) => void;
 }
@@ -44,17 +49,56 @@ const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
   userData, 
   onSave 
 }) => {
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(userData.profilePicture);
+  const { toast } = useToast();
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: userData.name,
       email: userData.email,
+      profilePicture: userData.profilePicture,
     },
   });
 
   const handleSubmit = (values: ProfileFormValues) => {
-    onSave(values);
+    onSave({
+      ...values,
+      profilePicture: previewUrl,
+    });
     onOpenChange(false);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Erro ao carregar imagem",
+        description: "Por favor, selecione um arquivo de imagem válido.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "A imagem deve ter no máximo 5MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Create URL for preview
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    
+    // Update form value
+    form.setValue("profilePicture", url);
   };
 
   return (
@@ -66,6 +110,37 @@ const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <div className="flex flex-col items-center mb-6">
+              <div className="relative mb-4">
+                <Avatar className="h-24 w-24">
+                  {previewUrl ? (
+                    <AvatarImage src={previewUrl} alt="Foto de perfil" />
+                  ) : (
+                    <AvatarFallback className="bg-shop-blue/10">
+                      <UserRound size={48} className="text-shop-blue" />
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                
+                <label 
+                  htmlFor="profile-picture" 
+                  className="absolute bottom-0 right-0 p-1.5 bg-shop-blue text-white rounded-full cursor-pointer hover:bg-blue-700"
+                >
+                  <Camera size={18} />
+                  <span className="sr-only">Alterar foto de perfil</span>
+                </label>
+                
+                <Input 
+                  id="profile-picture" 
+                  type="file" 
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </div>
+              <p className="text-sm text-gray-500">Clique no ícone da câmera para alterar sua foto</p>
+            </div>
+
             <FormField
               control={form.control}
               name="name"

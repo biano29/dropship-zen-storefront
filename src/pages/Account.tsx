@@ -3,12 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { User, LogOut, UserRound } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 import EditProfileSheet from "@/components/EditProfileSheet";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface UserData {
   name: string;
   email: string;
+  profilePicture?: string;
 }
 
 const Account: React.FC = () => {
@@ -65,8 +67,16 @@ const Account: React.FC = () => {
 
         <div className="bg-white p-8 rounded-lg shadow-md mb-8">
           <div className="flex items-center gap-4 mb-6">
-            <div className="bg-shop-blue/10 p-4 rounded-full">
-              <UserRound size={48} className="text-shop-blue" />
+            <div className="flex-shrink-0">
+              <Avatar className="h-16 w-16">
+                {user.profilePicture ? (
+                  <AvatarImage src={user.profilePicture} alt={user.name} />
+                ) : (
+                  <AvatarFallback className="bg-shop-blue/10">
+                    <UserRound size={36} className="text-shop-blue" />
+                  </AvatarFallback>
+                )}
+              </Avatar>
             </div>
             <div>
               <h2 className="text-2xl font-semibold">{user.name}</h2>
