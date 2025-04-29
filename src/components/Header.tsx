@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ShoppingCart, Menu, Search, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ShoppingCart, Menu, Search, User, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,9 @@ import { useCart } from "@/contexts/CartContext";
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { cartItems } = useCart();
+  const navigate = useNavigate();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -21,9 +23,20 @@ const Header: React.FC = () => {
       }
     };
 
+    const checkLoginStatus = () => {
+      const user = localStorage.getItem("user");
+      setIsLoggedIn(!!user);
+    };
+
     window.addEventListener("scroll", handleScroll);
+    checkLoginStatus();
+
+    // Verificar o status de login periodicamente
+    const loginCheckInterval = setInterval(checkLoginStatus, 1000);
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      clearInterval(loginCheckInterval);
     };
   }, []);
 
@@ -73,9 +86,17 @@ const Header: React.FC = () => {
                 size={18} 
               />
             </div>
-            <Link to="/conta" className="text-shop-dark hover:text-shop-blue">
-              <User size={24} />
-            </Link>
+            
+            {isLoggedIn ? (
+              <Link to="/conta" className="text-shop-dark hover:text-shop-blue">
+                <User size={24} />
+              </Link>
+            ) : (
+              <Link to="/login" className="text-shop-dark hover:text-shop-blue">
+                <LogIn size={24} />
+              </Link>
+            )}
+            
             <Link to="/carrinho" className="relative">
               <ShoppingCart size={24} className="text-shop-dark hover:text-shop-blue" />
               {totalItems > 0 && (
@@ -155,13 +176,33 @@ const Header: React.FC = () => {
               >
                 Políticas
               </Link>
-              <Link 
-                to="/conta" 
-                className="text-shop-dark hover:text-shop-blue p-2 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Minha Conta
-              </Link>
+              
+              {isLoggedIn ? (
+                <Link 
+                  to="/conta" 
+                  className="text-shop-dark hover:text-shop-blue p-2 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Minha Conta
+                </Link>
+              ) : (
+                <>
+                  <Link 
+                    to="/login" 
+                    className="text-shop-dark hover:text-shop-blue p-2 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Entrar
+                  </Link>
+                  <Link 
+                    to="/cadastro" 
+                    className="text-shop-dark hover:text-shop-blue p-2 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Cadastrar
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}
